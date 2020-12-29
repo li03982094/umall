@@ -51,7 +51,6 @@ export default {
   
   mounted(){
     this.init()
- 
   }
 }
 </script>

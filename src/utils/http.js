@@ -37,7 +37,7 @@ function formData(user){
 // ------菜单管理------
 
 // 菜单列表
-export const menuList = () => {
+export let menuList = () => {
     return axios({
         url: baseUrl + "/api/menulist",
         method: "get",
@@ -183,7 +183,7 @@ export let cateAdd = (obj) => {
     })
 }
 //商品分类列表
-// istree是否需要返回树形结构  是-true,  否：不传pid
+// istree是否需要返回树形结构  是-true,    {pid:1} 
 export let cateList = (obj) => {
     return axios({
         url: baseUrl + "/api/catelist",
@@ -334,7 +334,7 @@ export let goodsAdd=(obj)=>{
     return axios({
         url:baseUrl+"/api/goodsadd",
         method:"post",
-        data:qs.stringify(obj)
+        data:formData(obj)
     })
 }
 //商品总数 用于计算分页
@@ -364,7 +364,7 @@ export let goodsEdit=(obj)=>{
     return axios({
         url:baseUrl+"/api/goodsedit",
         method:"post",
-        data:qs.stringify(obj)
+        data:formData(obj)
     })
 }
 //商品删除 id

@@ -44,7 +44,7 @@ let actions={
                     context.dispatch("reqList")
                     return
                 }
-
+                
                 let list =res.data.list
                 list.forEach(item=>{
                     item.attrs=JSON.parse(item.attrs)

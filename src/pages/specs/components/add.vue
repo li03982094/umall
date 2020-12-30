@@ -57,8 +57,8 @@
   
 <script>
 import { mapActions, mapGetters } from "vuex";
-import {speAdd,speEdit,speInfo} from "../../../utils/http"
-import {sucalert} from "../../../utils/alert"
+import { speAdd, speEdit, speInfo } from "../../../utils/http";
+import { sucalert, erralert } from "../../../utils/alert";
 export default {
   props: ["info"],
   data() {
@@ -79,13 +79,13 @@ export default {
   methods: {
     ...mapActions({
       reqList: "specs/reqList",
-      reqTotal:"specs/reqTotal"
+      reqTotal: "specs/reqTotal",
     }),
     cancel() {
-        if(!this.info.isAdd){
-            this.empty()
-        }
-        this.info.isShow=false
+      if (!this.info.isAdd) {
+        this.empty();
+      }
+      this.info.isShow = false;
     },
     empty() {
       this.user = {
@@ -95,43 +95,63 @@ export default {
       };
       this.attrsArr = [{ value: "" }];
     },
-    addAttr(){
-        this.attrsArr.push({value:""})
+    addAttr() {
+      this.attrsArr.push({ value: "" });
     },
-    delAttr(index){
-        this.attrsArr.splice(index,1)
+    delAttr(index) {
+      this.attrsArr.splice(index, 1);
+    },
+    verification() {
+      return new Promise((resolve, reject) => {
+        if (this.user.specsname == "") {
+          erralert("规格名称不能为空");
+          return;
+        }
+        // if(this.attrsArr.length>0){
+        //   erralert("请添加规格属性")
+        // }
+        resolve();
+      });
     },
     add() {
-       this.user.attrs= JSON.stringify(this.attrsArr.map(item=>item.value))
-        speAdd(this.user).then(res=>{
-            if(res.data.code==200){
-                sucalert(res.data.msg)
-            }
-            this.cancel()
-            this.empty()
-            this.reqList()
-            this.reqTotal()
-        })
+      this.verification().then(() => {
+        this.user.attrs = JSON.stringify(
+          this.attrsArr.map((item) => item.value)
+        );
+        speAdd(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+          }
+          this.cancel();
+          this.empty();
+          this.reqList();
+          this.reqTotal();
+        });
+      });
     },
-    getOne(id){
-        speInfo({id:id}).then(res=>{
-            if(res.data.code==200){
-               this.user=res.data.list[0]
-               this.user.attrs=JSON.parse(this.user.attrs)
-               this.attrsArr=this.user.attrs.map(item=>({value:item}))
-            }
-        })
+    getOne(id) {
+      speInfo({ id: id }).then((res) => {
+        if (res.data.code == 200) {
+          this.user = res.data.list[0];
+          this.user.attrs = JSON.parse(this.user.attrs);
+          this.attrsArr = this.user.attrs.map((item) => ({ value: item }));
+        }
+      });
     },
     update() {
-        this.user.attrs= JSON.stringify(this.attrsArr.map(item=>item.value))
-        speEdit(this.user).then(res=>{
-            if(res.data.code==200){
-                sucalert(res.data.msg)
-                this.cancel()
-                this.empty()
-                this.reqList()
-            }
-        })
+      this.verification().then(() => {
+        this.user.attrs = JSON.stringify(
+          this.attrsArr.map((item) => item.value)
+        );
+        speEdit(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+            this.cancel();
+            this.empty();
+            this.reqList();
+          }
+        });
+      });
     },
   },
   mounted() {},

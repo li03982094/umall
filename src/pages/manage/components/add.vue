@@ -7,7 +7,7 @@
     >
       <el-form :model="user">
         <el-form-item label="所属角色" label-width="100px">
-          <el-select v-model="user.roleid" >
+          <el-select v-model="user.roleid">
             <el-option label="--请选择--" value="" disabled></el-option>
             <el-option
               v-for="item in dataList"
@@ -33,18 +33,18 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        
-        <el-button type="primary"  v-if="info.isadd" @click="add">添 加</el-button>
-        <el-button type="primary"  v-else @click="update">修 改</el-button>
-      </div>  
-
+        <el-button type="primary" v-if="info.isadd" @click="add"
+          >添 加</el-button
+        >
+        <el-button type="primary" v-else @click="update">修 改</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import {roleList,userAdd,userInfo,userEdit} from "../../../utils/http";
-import { sucalert } from "../../../utils/alert";
+import { roleList, userAdd, userInfo, userEdit } from "../../../utils/http";
+import { sucalert, erralert } from "../../../utils/alert";
 export default {
   props: ["list", "info"],
   data() {
@@ -80,34 +80,54 @@ export default {
       }
       this.info.isShow = false;
     },
-    add(){
-      userAdd(this.user).then(res=>{
-        if(res.data.code==200){
-          sucalert(res.data.msg)
+    verification() {
+      return new Promise((resolve, reject) => {
+        if (this.user.roleid == "") {
+          erralert("请选择角色");
+          return;
         }
-        this.cancel()
-        this.empty()
-        this.$emit("init")
-      })
-    },
-    getOne(id){
-      userInfo({uid:id}).then(res=>{
-        if(res.data.code==200){
-          this.user=res.data.list
+        if (this.user.username == "") {
+          erralert("请输入用户名");
+          return;
         }
-        this.user.password=""
-      })
+        if (this.user.password == "") {
+          erralert("请输入密码");
+          return;
+        }
+        resolve();
+      });
     },
-    update(){
-      userEdit(this.user).then(res=>{
-          if(res.data.code==200){
-            sucalert(res.data.msg)
-            this.cancel()
-            this.empty()
-            this.$emit("init")
+    add() {
+      this.verification().then(() => {
+        userAdd(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
           }
-      })
-    }
+          this.cancel();
+          this.empty();
+          this.$emit("init");
+        });
+      });
+    },
+    getOne(id) {
+      userInfo({ uid: id }).then((res) => {
+        if (res.data.code == 200) {
+          this.user = res.data.list;
+        }
+      });
+    },
+    update() {
+      this.verification().then(() => {
+        userEdit(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+            this.cancel();
+            this.empty();
+            this.$emit("init");
+          }
+        });
+      });
+    },
   },
 };
 </script>

@@ -43,7 +43,8 @@
 
 <script>
 import { roleAdd, roleInfo, roleEdit, menuList } from "../../../utils/http";
-import { sucalert } from "../../../utils/alert";
+import { sucalert, erralert } from "../../../utils/alert";
+import { mapGetters, mapActions } from "vuex";
 export default {
   props: ["list", "info"],
   data() {
@@ -60,6 +61,11 @@ export default {
       },
     };
   },
+  computed: {
+    ...mapGetters({
+      userInfo: "userInfo",
+    }),
+  },
   mounted() {
     menuList().then((res) => {
       if (res.data.code == 200) {
@@ -68,15 +74,29 @@ export default {
     });
   },
   methods: {
-    add() {
-      this.user.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
-      roleAdd(this.user).then((res) => {
-        if (res.data.code == 200) {
-          sucalert(res.data.msg);
+    ...mapActions({
+      changeUser: "changeUser",
+    }),
+    verification() {
+      return new Promise((resolve, reject) => {
+        if (this.user.rolename == "") {
+          erralert("角色名称不能为空");
+          return;
         }
-        this.cancel();
-        this.empty();
-        this.$emit("init");
+        resolve();
+      });
+    },
+    add() {
+      this.verification().then(() => {
+        this.user.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+        roleAdd(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+          }
+          this.cancel();
+          this.empty();
+          this.$emit("init");
+        });
       });
     },
 
@@ -102,13 +122,21 @@ export default {
       });
     },
     update() {
-      roleEdit(this.user).then((res) => {
-        if (res.data.code == 200) {
-          sucalert(res.data.msg);
-          this.cancel();
-          this.empty();
-          this.$emit("init");
-        }
+      this.verification().then(() => {
+        this.user.menus = JSON.stringify(this.$refs.tree.getCheckedKeys());
+        roleEdit(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+            // 修改的是自己就退出登录
+            if (this.user.id == this.userInfo.roleid) {
+              this.changeUser({}), this.$router.push("/login");
+              return;
+            }
+            this.cancel();
+            this.empty();
+            this.$emit("init");
+          }
+        });
       });
     },
   },

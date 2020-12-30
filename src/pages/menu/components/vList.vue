@@ -26,8 +26,8 @@
           <el-button type="info" v-else>禁用</el-button>
         </template>
       </el-table-column>
-      <el-table-column label="操作">
-        <template slot-scope="scope">
+      <el-table-column label="操作"  width="180">
+        <template slot-scope="scope"  >
           <el-button type="primary" @click="edit(scope.row.id)">编辑</el-button>
           <!-- <el-button type="danger" @click="del(scope.row.id)">删除</el-button> -->
           <del-btn @confirm="del(scope.row.id)"></del-btn>

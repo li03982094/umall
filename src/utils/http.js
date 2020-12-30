@@ -1,6 +1,7 @@
 import axios from "axios"
 import qs from "qs"
 import Vue from "vue"
+import store from "../store"
 
 import { erralert } from "./alert"
 // 开发环境8080
@@ -11,6 +12,14 @@ Vue.prototype.$pre = "http://localhost:3000"
 // let baseUrl =""
 // Vue.prototype.$pre=""
 
+// 请求拦截  加请求头
+axios.interceptors.request.use(config=>{
+    if(config.url!==baseUrl+"/api/userlogin"){
+        config.headers.authorization=store.state.userInfo.token
+    }
+    return config
+})
+
 // 响应拦截
 axios.interceptors.response.use(res => {
     if (res.data.code !== 200) {
@@ -18,6 +27,10 @@ axios.interceptors.response.use(res => {
     }
     if (!res.data.list) {
         res.data.list = []
+    }
+    //掉线处理
+    if(res.data.msg=="登录已过期或访问权限受限"){
+        store.dispatch("changeUser",{})
     }
     console.group("请求地址：" + res.config.url)
     console.log(res)
@@ -375,3 +388,4 @@ export let goodsDel=(obj)=>{
         data:qs.stringify(obj)
     })
 }
+

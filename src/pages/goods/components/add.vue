@@ -7,7 +7,7 @@
       @opened="opened"
     >
       <el-form :model="user">
-        <div>{{ user }}</div>
+        
         <el-form-item label="一级分类" label-width="100px">
           <el-select v-model="user.first_cateid" @change="changeFirstList">
             <el-option label="--请选择--" disabled value=""> </el-option>
@@ -102,7 +102,7 @@
   <script>
 import { mapActions, mapGetters } from "vuex";
 import { cateList, goodsAdd, goodsInfo, goodsEdit } from "../../../utils/http";
-import { sucalert } from "../../../utils/alert";
+import { sucalert, erralert } from "../../../utils/alert";
 import E from "wangeditor";
 import path from "path";
 export default {
@@ -211,52 +211,97 @@ export default {
       this.editor.create();
       this.editor.txt.html(this.user.description);
     },
-    add() {
-      this.user.description = this.editor.txt.html();
-      let data = {
-        ...this.user,
-        specsattr: JSON.stringify(this.user.specsattr),
-      };
-      goodsAdd(data).then((res) => {
-        if (res.data.code == 200) {
-          sucalert(res.data.msg);
-          this.cancel();
-          this.empty();
-          this.reqList();
-          this.reqTotal()
+    verification() {
+      return new Promise((resolve, reject) => {
+        if (this.user.first_cateid == "") {
+          erralert("一级列表不能为空");
+          return;
         }
+        if (this.user.second_cateid == "") {
+          erralert("二级列表不能为空");
+          return;
+        }
+        if (this.user.goodsname == "") {
+          erralert("商品名称不能为空");
+          return;
+        }
+        if (this.user.price === "") {
+          erralert("商品价格不能为空");
+          return;
+        }
+        if (this.user.market_price === "") {
+          erralert("商品市场价格不能为空");
+          return;
+        }
+        if (!this.user.img) {
+          erralert("请上传图片图片");
+          return;
+        }
+        if (this.user.specsid === "") {
+          erralert("商品规格不能为空");
+          return;
+        }
+        if (this.user.specsattr.length === 0) {
+          erralert("请选择规格属性");
+          return;
+        }
+        if (this.editor.txt.html() == "") {
+          erralert("请输入商品描述");
+          return;
+        }
+        resolve();
+      });
+    },
+    add() {
+      this.verification().then(() => {
+        this.user.description = this.editor.txt.html();
+        let data = {
+          ...this.user,
+          specsattr: JSON.stringify(this.user.specsattr),
+        };
+        goodsAdd(data).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+            this.cancel();
+            this.empty();
+            this.reqList();
+            this.reqTotal();
+          }
+        });
       });
     },
     getOne(id) {
       console.log(id);
       goodsInfo({ id: id }).then((res) => {
         if (res.data.code == 200) {
-            this.user=res.data.list
+          this.user = res.data.list;
           this.getSecondList();
-          this.imgUrl=this.$pre+this.user.img;
+          this.imgUrl = this.$pre + this.user.img;
           this.getSecondSpe();
-          this.user.specsattr=JSON.parse(this.user.specsattr)
+          this.user.specsattr = JSON.parse(this.user.specsattr);
           this.user.id = id;
-           if (this.editor) {
+          if (this.editor) {
             this.editor.txt.html(this.user.description);
           }
         }
       });
     },
     update() {
-        this.user.description=this.editor.txt.html()
-        let data={
-            ...this.user,
-            specsattr:JSON.stringify(this.user.specsattr),
-        }
-        goodsEdit(data).then(res=>{
-            if(res.data.code==200){
-                this.cancel()
-                this.empty()
-                sucalert(res.data.msg)
-                this.reqList()
-            }
-        })
+      this.verification().then(() => {
+        this.user.description = this.editor.txt.html();
+        let data = {
+          ...this.user,
+          specsattr: JSON.stringify(this.user.specsattr),
+        };
+        goodsEdit(data).then((res) => {
+          if (res.data.code == 200) {
+            this.cancel();
+            this.empty();
+            sucalert(res.data.msg);
+            this.reqList();
+          }
+        });
+      });
     },
   },
   mounted() {

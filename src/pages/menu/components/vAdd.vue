@@ -1,6 +1,10 @@
 <template>
   <div>
-    <el-dialog :title="info.isAdd?'添加菜单':'编辑菜单'" :visible.sync="info.isShow" @closed="cancel">
+    <el-dialog
+      :title="info.isAdd ? '添加菜单' : '编辑菜单'"
+      :visible.sync="info.isShow"
+      @closed="cancel"
+    >
       <el-form :model="user">
         <el-form-item label="菜单名称" label-width="100px">
           <el-input v-model="user.title" autocomplete="off"></el-input>
@@ -51,9 +55,11 @@
           </el-switch>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <div slot="footer" class="dialog-footer" >
         <el-button type="danger" @click="cancel">取 消</el-button>
-        <el-button type="primary" @click="add" v-if="info.isAdd">添 加</el-button>
+        <el-button type="primary" @click="add" v-if="info.isAdd"
+          >添 加</el-button
+        >
         <el-button type="primary" @click="update" v-else>修 改</el-button>
       </div>
     </el-dialog>
@@ -61,7 +67,7 @@
 </template>
 
 <script>
-import { sucalert } from "../../../utils/alert";
+import { sucalert, erralert } from "../../../utils/alert";
 import { indexRoutes } from "../../../router/index";
 import { menuAdd, menuInfo, menuEdit } from "../../../utils/http";
 export default {
@@ -103,14 +109,25 @@ export default {
         status: 1,
       };
     },
-    add() {
-      menuAdd(this.user).then((res) => {
-        if (res.data.code == 200) {
-          sucalert(res.data.msg);
+    verification() {
+      return new Promise((resolve, reject) => {
+        if (this.user.title == "") {
+          erralert("菜单名称不能为空");
+          return;
         }
-        this.cancel();
-        this.empty();
-        this.$emit("init");
+        resolve();
+      });
+    },
+    add() {
+      this.verification().then(() => {
+        menuAdd(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+          }
+          this.cancel();
+          this.empty();
+          this.$emit("init");
+        });
       });
     },
     changePid() {
@@ -129,13 +146,15 @@ export default {
       });
     },
     update() {
-      menuEdit(this.user).then((res) => {
-        if (res.data.code == 200) {
-          sucalert(res.data.msg);
-          this.cancel();
-          this.empty();
-          this.$emit("init");
-        }
+      this.verification().then(() => {
+        menuEdit(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+            this.cancel();
+            this.empty();
+            this.$emit("init");
+          }
+        });
       });
     },
   },

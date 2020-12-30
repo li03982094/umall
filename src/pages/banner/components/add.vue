@@ -5,7 +5,7 @@
       :visible.sync="info.isShow"
       @closed="cancel"
     >
-      {{ user }}
+    
       <el-form :model="user" class="form">
         <el-form-item label="标题" label-width="100px">
           <el-input v-model="user.title" clearable></el-input>
@@ -42,8 +42,8 @@
 </template>
 
 <script>
-import { bannerAdd,bannerInfo,bannerEdit } from "../../../utils/http";
-import { sucalert } from "../../../utils/alert";
+import { bannerAdd, bannerInfo, bannerEdit } from "../../../utils/http";
+import { sucalert, erralert } from "../../../utils/alert";
 export default {
   props: ["info", "list"],
   data() {
@@ -77,35 +77,53 @@ export default {
       this.imgUrl = URL.createObjectURL(file);
       this.user.img = file;
     },
+    verification() {
+      return new Promise((resolve, reject) => {
+        if (this.user.title == "") {
+          erralert("标题不能为空");
+          return;
+        }
+        if (!this.user.img) {
+          erralert("请上传图片");
+          return;
+        }
+        resolve();
+      });
+    },
+
     add() {
-      bannerAdd(this.user).then((res) => {
+      this.verification().then(() => {
+        bannerAdd(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+            this.empty();
+            this.cancel();
+            this.$emit("init");
+          }
+        });
+      });
+    },
+    getOne(id) {
+      bannerInfo({ id: id }).then((res) => {
         if (res.data.code == 200) {
-          sucalert(res.data.msg);
-          this.empty();
-          this.cancel();
-          this.$emit("init");
+          this.user = res.data.list;
+          this.user.id = id;
+          this.imgUrl = this.$pre + this.user.img;
         }
       });
     },
-    getOne(id){
-        bannerInfo({id:id}).then(res=>{
-            if(res.data.code==200){
-                this.user=res.data.list
-                this.user.id=id
-                this.imgUrl=this.$pre+this.user.img
-            }
-        })
+    update() {
+      this.verification().then(() => {
+        bannerEdit(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+            this.cancel();
+            this.empty();
+            this.$emit("init");
+          }
+        });
+      });
     },
-    update(){
-        bannerEdit(this.user).then(res=>{
-            if(res.data.code==200){
-                sucalert(res.data.msg)
-                this.cancel()
-                this.empty()
-                this.$emit("init")
-            }
-        })
-    }
   },
 };
 </script>

@@ -1,7 +1,6 @@
 <template>
   <div>
     <el-dialog title="会员编辑" :visible.sync="info.isShow" @closed="cancel">
-  
       <el-form :model="user">
         <el-form-item label="手机号" label-width="100px">
           <el-input v-model="user.phone" clearable></el-input>
@@ -23,7 +22,12 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="update" :disabled="user.password==''">修 改</el-button>
+        <el-button
+          type="primary"
+          @click="update"
+          :disabled="user.password == ''"
+          >修 改</el-button
+        >
       </div>
     </el-dialog>
   </div>
@@ -44,8 +48,7 @@ export default {
       },
     };
   },
-  mounted() {
-  },
+  mounted() {},
   methods: {
     empty() {
       this.user = {
@@ -58,23 +61,41 @@ export default {
     cancel() {
       this.info.isShow = false;
     },
+    verification() {
+      return new Promise((resolve, reject) => {
+        if (this.user.phone == "") {
+          erralert("请输入手机号");
+          return;
+        }
+        if (this.user.nickname == "") {
+          erralert("请输入昵称");
+          return;
+        }
+        if (this.user.password == "") {
+          erralert("请输入密码");
+          return;
+        }
+        resolve();
+      });
+    },
     getOne(uid) {
       memberInfo({ uid: uid }).then((res) => {
-        if (res.data.code == 200) { 
+        if (res.data.code == 200) {
           this.user = res.data.list;
           this.user.uid = uid;
-          
         }
       });
     },
     update() {
-      memberEdit(this.user).then((res) => {
-        if (res.data.code == 200) {
-          sucalert(res.data.msg);
-          this.cancel();
-          this.empty();
-          this.$emit("init");
-        }
+      this.verification().then(() => {
+        memberEdit(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+            this.cancel();
+            this.empty();
+            this.$emit("init");
+          }
+        });
       });
     },
   },

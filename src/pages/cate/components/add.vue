@@ -5,7 +5,6 @@
       :visible.sync="info.isShow"
       @closed="cancel"
     >
-      {{ user }}
       <el-form :model="user">
         <el-form-item label="上级分类" label-width="100px">
           <el-select v-model="user.pid">
@@ -53,13 +52,13 @@
 import { cateList, cateAdd, cateInfo, cateEdit } from "../../../utils/http";
 import path from "path";
 import { erralert, sucalert } from "../../../utils/alert";
-import {mapGetters,mapActions} from "vuex"
+import { mapGetters, mapActions } from "vuex";
 export default {
   props: ["info"],
-  computed:{
+  computed: {
     ...mapGetters({
-      list:"cate/list"
-    })
+      list: "cate/list",
+    }),
   },
   data() {
     return {
@@ -74,7 +73,7 @@ export default {
   },
   methods: {
     ...mapActions({
-      "reqList":"cate/reqList"
+      reqList: "cate/reqList",
     }),
     empty() {
       this.imgUrl = "";
@@ -110,15 +109,30 @@ export default {
       this.imgUrl = URL.createObjectURL(file);
       this.user.img = file;
     },
-    add() {
-      console.log("123")
-      cateAdd(this.user).then((res) => {
-        if (res.data.code == 200) {
-          sucalert(res.data.msg);
+    verification() {
+      return new Promise((resolve, reject) => {
+        if (!this.user.pid && this.user.pid !== 0) {
+          erralert("请选择上级分类");
+          return;
         }
-        this.cancel();
-        this.empty();
-        this.reqList()
+        if (this.user.catename == "") {
+          erralert("分类名称不能为空");
+          return;
+        }
+
+        resolve();
+      });
+    },
+    add() {
+      this.verification().then(() => {
+        cateAdd(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+          }
+          this.cancel();
+          this.empty();
+          this.reqList();
+        });
       });
     },
     getOne(id) {
@@ -131,13 +145,15 @@ export default {
       });
     },
     update() {
-      cateEdit(this.user).then((res) => {
-        if (res.data.code == 200) {
-          sucalert(res.data.msg);
-          this.cancel();
-          this.empty();
-          this.reqList()
-        }
+      this.verification().then(() => {
+        cateEdit(this.user).then((res) => {
+          if (res.data.code == 200) {
+            sucalert(res.data.msg);
+            this.cancel();
+            this.empty();
+            this.reqList();
+          }
+        });
       });
     },
   },

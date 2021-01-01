@@ -389,3 +389,43 @@ export let goodsDel=(obj)=>{
     })
 }
 
+// 限时秒杀
+// 秒杀添加
+export let seckAdd=(obj)=>{
+    return axios({
+        url:baseUrl+"/api/seckadd",
+        method:"post",
+        data:qs.stringify(obj)
+    })
+}
+// 秒杀列表
+export let seckList=()=>{
+    return axios({
+        url:baseUrl+"/api/secklist",
+        method:"get"
+    })
+}
+// 秒杀获取一条 id
+export let seckInfo=(obj)=>{
+    return axios({
+        url:baseUrl+"/api/seckinfo",
+        method:"get",
+        params:obj
+    })
+}
+// 秒杀修改
+export let seckEdit=(obj)=>{
+    return axios({
+        url:baseUrl+"/api/seckedit",
+        method:"post",
+        data:qs.stringify(obj)
+    })
+}
+// 秒杀删除 id
+export let seckDel=(obj)=>{
+    return axios({
+        url:baseUrl+"/api/seckdelete",
+        method:"post",
+        data:qs.stringify(obj)
+    })
+}
